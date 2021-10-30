@@ -9,6 +9,8 @@ import numpy as np
 import os
 from yolo_functions import OutputRescaler, ImageReader, find_high_class_probability_bbox, nonmax_suppression, ANCHORS, TRUE_BOX_BUFFER, LABELS
 
+SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/saved_model.pb"
+
 
 class DetectionManager:
     def __init__(self):
@@ -32,16 +34,18 @@ class DetectionManager:
         print("Ending detection: " + str(datetime.datetime.now()))
 
     def load_model_SSD(self):
-        self.model_SSD = cv2.dnn.readNetFromTensorflow(
-            self.SSD_INFERENCE_GRAPH,
-            self.SSD_PBTXT)
+        self.model_SSD = tf.keras.models.load_model(SSD_MOBILENET_V2_SAVED_MODEL_PATH)
 
     def detect_SSD(self, image, img_w, img_h):
+        image = cv2.imread("/home/pi/Desktop/happy_people.jpeg")
         frame = image.copy()
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (img_w, img_h))
+        '''
         self.model_SSD.setInput(cv2.dnn.blobFromImage(frame_resized, size=(img_w, img_h), swapRB=True))
         output = self.model_SSD.forward()
+        '''
+        output = self.model_SSD.predict(cv2.dnn.blobFromImage(frame_resized, size=(img_w, img_h), swapRB=True))
         return output
 
     def load_model_GazdaWitekLipka(self):
@@ -94,28 +98,13 @@ class DetectionManager:
         start_time = time.time()
         while True:
             if self.neuralNetworkType == "CUSTOM":
-                y_pred = self.detect_GazdaWitekLipka(frame, IMAGE_W, IMAGE_H)
+                netout = self.detect_GazdaWitekLipka(frame, IMAGE_W, IMAGE_H)
             elif self.neuralNetworkType == "SSD":
-                y_pred = self.detect_SSD(frame, 300, 300)
+                netout = self.detect_SSD(frame, 300, 300)
             else:
-                y_pred=None
+                netout=None
                 
-            netout = y_pred[0]
-
-            outputRescaler = OutputRescaler(ANCHORS=ANCHORS)
-            netout_scale = outputRescaler.fit(netout)
-
-            boxes = find_high_class_probability_bbox(netout_scale, self.obj_threshold)
-
-            iou_threshold = 0.1
-            final_boxes = nonmax_suppression(boxes, iou_threshold=iou_threshold, obj_threshold=self.obj_threshold)
-
-            obj_baseline = 0.05
-
-            score_rescaled = np.array([box.get_score() for box in final_boxes])
-            score_rescaled /= obj_baseline
-
-            predicted_boxes = []
+            
 
             for sr, box in zip(score_rescaled, boxes):
                 print('PREDICTED LABEL: ' + LABELS[box.label])
