@@ -2,17 +2,100 @@ import tensorflow as tf
 import cv2
 import numpy as np
 from tensorflow import keras
-#import tensorflow_hub as hub
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
 
+category_map = {
+    1: 'person',
+    2: 'bicycle',
+    3: 'car',
+    4: 'motorcycle',
+    5: 'airplane',
+    6: 'bus',
+    7: 'train',
+    8: 'truck',
+    9: 'boat',
+    10: 'traffic light',
+    11: 'fire hydrant',
+    13: 'stop sign',
+    14: 'parking meter',
+    15: 'bench',
+    16: 'bird',
+    17: 'cat',
+    18: 'dog',
+    19: 'horse',
+    20: 'sheep',
+    21: 'cow',
+    22: 'elephant',
+    23: 'bear',
+    24: 'zebra',
+    25: 'giraffe',
+    27: 'backpack',
+    28: 'umbrella',
+    31: 'handbag',
+    32: 'tie',
+    33: 'suitcase',
+    34: 'frisbee',
+    35: 'skis',
+    36: 'snowboard',
+    37: 'sports ball',
+    38: 'kite',
+    39: 'baseball bat',
+    40: 'baseball glove',
+    41: 'skateboard',
+    42: 'surfboard',
+    43: 'tennis racket',
+    44: 'bottle',
+    46: 'wine glass',
+    47: 'cup',
+    48: 'fork',
+    49: 'knife',
+    50: 'spoon',
+    51: 'bowl',
+    52: 'banana',
+    53: 'apple',
+    54: 'sandwich',
+    55: 'orange',
+    56: 'broccoli',
+    57: 'carrot',
+    58: 'hot dog',
+    59: 'pizza',
+    60: 'donut',
+    61: 'cake',
+    62: 'chair',
+    63: 'couch',
+    64: 'potted plant',
+    65: 'bed',
+    67: 'dining table',
+    70: 'toilet',
+    72: 'tv',
+    73: 'laptop',
+    74: 'mouse',
+    75: 'remote',
+    76: 'keyboard',
+    77: 'cell phone',
+    78: 'microwave',
+    79: 'oven',
+    80: 'toaster',
+    81: 'sink',
+    82: 'refrigerator',
+    84: 'book',
+    85: 'clock',
+    86: 'vase',
+    87: 'scissors',
+    88: 'teddy bear',
+    89: 'hair drier',
+    90: 'toothbrush'
+}
+
 #model_SSD = tf.keras.models.load_model(SSD_MOBILENET_V2_SAVED_MODEL_PATH)
 #model_SSD = keras.models.load_model(SSD_MOBILENET_V2_SAVED_MODEL_PATH)
-
-image = cv2.imread("/home/pi/Desktop/happy_people.jpeg")
+img_width=300
+img_height=300
+image = cv2.imread("/home/pi/Desktop/happyPeople.jpg")
 frame = image.copy()
 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-frame_resized = cv2.resize(frame_rgb, (300, 300))
+frame_resized = cv2.resize(frame_rgb, (img_width, img_height))
 img = frame_resized
 '''
 print("frame_resized: ")
@@ -42,6 +125,26 @@ x = tf.keras.applications.mobilenet.preprocess_input(
 
 labeling = infer(tf.constant(x))
 print(labeling)
+
+img_width=1000
+img_height=1000
+final_image = cv2.resize(img, (1000, 1000))
+
+for box, score, detection_class in zip(labeling['detection_boxes'][0], labeling['detection_scores'][0], labeling['detection_classes'][0]):
+    if score > 0.1:
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        print('detection_class: ' + str(detection_class.numpy()))
+        #print('detection_class type: ' + type(detection_class))
+        cv2.putText(final_image, category_map[int(detection_class)], (int(box[1]*img_width), int(box[0]*img_height)), font, 3, (0, 255, 0), 2, cv2.LINE_AA)
+        final_image = cv2.rectangle(final_image, (int(box[1]*img_width), int(box[0]*img_height)), (int(box[3]*img_width), int(box[2]*img_height)), (0, 255, 0), 2)
+
+cv2.imshow("Window", final_image)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+# Use keypoints if available in detections
+
 #predict_class = np.argmax(labeling['output_0'].numpy())
 #print(predict_class ) # int, depends on your task -- mine was img classfication
 #self.model_SSD.setInput(cv2.dnn.blobFromImage(frame_resized, size=(img_w, img_h), swapRB=True))
