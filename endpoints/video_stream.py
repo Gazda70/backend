@@ -1,21 +1,22 @@
 import cv2
 from threading import Thread
-from picamera.array import PiRGBArray
-from picamera import PiCamera
-import time
 
 
 class VideoStream:
     """Camera object that controls video streaming from the Picamera"""
 
     def __init__(self, resolution={"width":320, "height":320}, framerate=30):
-        self.camera = PiCamera()
-        self.camera.resolution = (resolution["width"], resolution["height"])
-        self.camera.framerate = framerate
-        self.rawCapture = PiRGBArray(self.camera, size = (resolution["width"], resolution["height"]))
-        self.frame=None
-        self.stopped=False
-        time.sleep(0.1)
+        # Initialize the PiCamera and the camera image stream
+        self.stream = cv2.VideoCapture(0)
+        ret = self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        ret = self.stream.set(3, resolution["width"])
+        ret = self.stream.set(4, resolution["height"])
+
+        # Read first frame from the stream
+        (self.grabbed, self.frame) = self.stream.read()
+
+        # Variable to control when the camera is stopped
+        self.stopped = False
 
     def start(self):
         # Start the thread that reads frames from the video stream
@@ -23,15 +24,16 @@ class VideoStream:
         return self
 
     def update(self):
-        for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
+        # Keep looping indefinitely until the thread is stopped
+        while True:
             # If the camera is stopped, stop the thread
             if self.stopped:
+                # Close camera resources
+                self.stream.release()
                 return
 
             # Otherwise, grab the next frame from the stream
-            self.frame = frame.array
-            
-            self.rawCapture.truncate(0)
+            (self.grabbed, self.frame) = self.stream.read()
 
     def read(self):
         # Return the most recent frame
@@ -40,16 +42,3 @@ class VideoStream:
     def stop(self):
         # Indicate that the camera and thread should be stopped
         self.stopped = True
-        
-
-v = VideoStream()
-
-v.start()
-
-frame = v.read()
-
-cv2.imshow("test", frame)
-
-cv2.waitKey(0)
-
-v.stop()
