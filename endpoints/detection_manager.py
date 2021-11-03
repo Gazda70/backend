@@ -10,6 +10,7 @@ import os
 from detector import Detector
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+from database_manager import DatabaseManager
 import pymongo
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
@@ -105,7 +106,7 @@ class DetectionManager:
         self.model_paths = {"SSD_Mobilenet_v2_320x320":"/home/pi/Desktop/My_Server/backend/models/"}
         self.category_maps = {"SSD_Mobilenet_v2_320x320":{1: "person"}}
 
-    def setupDetection(self, neuralNetworkType="SSD_Mobilenet_v2_320x320", detectionSeconds=10,  obj_threshold=0.3,
+    def setupDetection(self, detection_period_id, neuralNetworkType="SSD_Mobilenet_v2_320x320", detectionSeconds=10,  obj_threshold=0.3,
                        video_resolution={"width":320, "height":320}, framerate=30):
         self.neuralNetworkType = neuralNetworkType
         self.obj_threshold = obj_threshold
@@ -113,6 +114,8 @@ class DetectionManager:
         self.video_resolution = video_resolution
         self.framerate = framerate
         self.detector = Detector(self.model_paths["SSD_Mobilenet_v2_320x320"], self.category_maps["SSD_Mobilenet_v2_320x320"])
+        self.database_manager = DatabaseManager()
+        self.detection_period_id = detection_period_id
         print("Starting detection: " + str(datetime.datetime.now()))
 
         detections = self.detect()
@@ -127,12 +130,6 @@ class DetectionManager:
         rawCapture = PiRGBArray(camera, size = (resolution["width"], resolution["height"]))
         
         start_time = time.time()
-        
-        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-
-        mydb = myclient["database"]
-        
-        mycol = mydb["Detections"]
         
         #video_stream = VideoStream(self.video_resolution, self.framerate)
         
@@ -152,9 +149,8 @@ class DetectionManager:
             current_time = time.time()
             elapsed_time = current_time - start_time
             
-            mycol.insert_one({"frame_time":current_time, "detections":detection_results})
-            
             #detection_objects.append({"frame_time":current_time, "detections":predicted_boxes})
+            self.database_manager.insertDetection(current_time, detection_results, self.detection_period_id)
             
             if elapsed_time > self.detectionSeconds:
                 #self.writeDetectionPeriodSummary(detection_objects, start_time, self.detectionSeconds)

@@ -58,7 +58,7 @@ def setup_detection():
     print(startTime["hour"] + ":" + startTime["minute"] + " " + startTime["halfOfDay"])
     print(startDate["month"] + " " + startDate["day"])
     schedule_detection(startDate["month"] + " " + startDate["day"],
-                       startTime["hour"] + ":" + startTime["minute"])
+                       startTime["hour"] + ":" + startTime["minute"], "not specified")
     response_body = {
       "startDay": "Wed",
       "endDay": "Thurs",
