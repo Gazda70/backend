@@ -8,6 +8,9 @@ import tensorflow as tf
 import numpy as np
 import os
 from detector import Detector
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import pymongo
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
 category_map = {
@@ -116,22 +119,43 @@ class DetectionManager:
         print("Ending detection: " + str(datetime.datetime.now()))
 
     def detect(self):
+        resolution={"width":320, "height":320}
+        framerate=30
+        camera = PiCamera()
+        camera.resolution = (resolution["width"], resolution["height"])
+        camera.framerate = framerate
+        rawCapture = PiRGBArray(camera, size = (resolution["width"], resolution["height"]))
         
         start_time = time.time()
         
-        video_stream = VideoStream(self.video_resolution, self.framerate)
+        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+
+        mydb = myclient["database"]
         
-        video_stream.start()
+        mycol = mydb["Detections"]
         
-        while True:
+        #video_stream = VideoStream(self.video_resolution, self.framerate)
+        
+        #video_stream.start()
+        
     
-            frame = video_stream.read()
+            #frame = video_stream.read()
+        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+
+            # Otherwise, grab the next frame from the stream
+            frame = frame.array
+            
+            rawCapture.truncate(0)
 
             detection_results = self.detector.detect(frame, self.video_resolution["width"], self.video_resolution["height"])
 
             current_time = time.time()
             elapsed_time = current_time - start_time
-            detection_objects.append({"frame_time":current_time, "detections":predicted_boxes})
+            
+            mycol.insert_one({"frame_time":current_time, "detections":detection_results})
+            
+            #detection_objects.append({"frame_time":current_time, "detections":predicted_boxes})
+            
             if elapsed_time > self.detectionSeconds:
                 #self.writeDetectionPeriodSummary(detection_objects, start_time, self.detectionSeconds)
                 '''
@@ -141,8 +165,10 @@ class DetectionManager:
                 '''
                 break
 
+        camera.stop_preview()
+        camera.close()
         cv2.destroyAllWindows()
-        videostream.stop()
+        #videostream.stop()
 
         #return final_boxes
 

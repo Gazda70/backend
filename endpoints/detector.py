@@ -116,8 +116,7 @@ class Detector:
         '''
         #print(list(loaded.signatures.keys()))  # ["serving_default"]
 
-        infer = model.signatures["serving_default"]
-        print(infer.structured_outputs) #{'output_0': TensorSpec(shape=(1, 2), dtype=tf.float32, name='output_0')}
+        infer = self.model.signatures["serving_default"]#{'output_0': TensorSpec(shape=(1, 2), dtype=tf.float32, name='output_0')}
 
         # convert img to tf
         x = tf.keras.preprocessing.image.img_to_array(img, dtype='uint8')
@@ -126,6 +125,8 @@ class Detector:
         # (1,3,network_size, network_size)
 
         labeling = infer(tf.constant(x))
+        return str(labeling)
+        '''
         print(labeling)
 
         img_width=1000
@@ -152,6 +153,7 @@ class Detector:
                 predicted_boxes.append(
                     {'name': LABELS[box.label], 'score': box.get_score(),
                                                     'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax})
+                                                    '''
         # Use keypoints if available in detections
 
         #predict_class = np.argmax(labeling['output_0'].numpy())
