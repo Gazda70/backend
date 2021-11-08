@@ -1,10 +1,14 @@
+import sys
+sys.path.append("/usr/lib/python3.7/")
+#import tensorflow as tf
+
+import platform
 import cv2
 from threading import Thread
 from video_stream import VideoStream
 from datetime import datetime
 import datetime
 import time
-import tensorflow as tf
 import numpy as np
 import os
 from detector import Detector
@@ -98,7 +102,6 @@ category_map = {
 }
 img_width=300
 img_height=300
-image = cv2.imread("/home/pi/Desktop/happyPeople.jpg")
 
 
 class DetectionManager:
@@ -163,7 +166,7 @@ class DetectionManager:
 
         camera.stop_preview()
         camera.close()
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
         #videostream.stop()
 
         #return final_boxes

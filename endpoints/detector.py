@@ -99,9 +99,9 @@ class Detector:
     def detect(self, image, img_width, img_height):
         #model_SSD = tf.keras.models.load_model(SSD_MOBILENET_V2_SAVED_MODEL_PATH)
         #model_SSD = keras.models.load_model(SSD_MOBILENET_V2_SAVED_MODEL_PATH)
-        frame = image.copy()
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = cv2.resize(frame_rgb, (img_width, img_height))
+        #frame = image.copy()
+        #frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        #img = cv2.resize(frame_rgb, (img_width, img_height))
         '''
         print("frame_resized: ")
         print(frame_resized.shape)
@@ -119,7 +119,7 @@ class Detector:
         infer = self.model.signatures["serving_default"]#{'output_0': TensorSpec(shape=(1, 2), dtype=tf.float32, name='output_0')}
 
         # convert img to tf
-        x = tf.keras.preprocessing.image.img_to_array(img, dtype='uint8')
+        x = tf.keras.preprocessing.image.img_to_array(image, dtype='uint8')
         x = tf.keras.applications.mobilenet.preprocess_input(
             x[tf.newaxis,...]).astype(dtype='uint8')
         # (1,3,network_size, network_size)

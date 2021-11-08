@@ -1,5 +1,6 @@
-# coding=utf-8
 
+# coding=utf
+import cv2
 from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 #from detection_manager import DetectionManager
@@ -49,8 +50,11 @@ def get_predictions():
     print(response_body_json)
     return response
     '''
+
 @app.route('/setup', methods=['GET','POST'])
 def setup_detection():
+    #print("Python version: " + platform.python_version())
+    cv2.imread("/home/pi/Desktop/happy_people.jpeg")
     req = request.get_json()
     print("startDate: ")
     startDate = ast.literal_eval(req["startDate"])
@@ -59,6 +63,7 @@ def setup_detection():
     print(startDate["month"] + " " + startDate["day"])
     schedule_detection(startDate["month"] + " " + startDate["day"],
                        startTime["hour"] + ":" + startTime["minute"], "not specified")
+                       
     response_body = {
       "startDay": "Wed",
       "endDay": "Thurs",
