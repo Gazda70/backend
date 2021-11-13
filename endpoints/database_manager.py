@@ -12,7 +12,8 @@ class DatabaseManager:
         
     def insertDetectionPeriod(self, startDate, startTime, endTime, neuralNetworkType, detectionSeconds,  obj_threshold,
                        video_resolution, framerate):
-        return_value = self.detectionPeriodCollection.insert_one({"neuralNetworkType":neuralNetworkType, "detectionSeconds":detectionSeconds, "obj_threshold":obj_threshold,
+        return_value = self.detectionPeriodCollection.insert_one({"startDate":startDate, "startTime":startTime, "endTime":endTime, "detectionSeconds":detectionSeconds,
+                                                                  "neuralNetworkType":neuralNetworkType, "obj_threshold":obj_threshold,
                        "video_resolution":video_resolution, "framerate":framerate})
         return return_value.inserted_id
         

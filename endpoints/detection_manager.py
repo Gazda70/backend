@@ -145,6 +145,10 @@ class DetectionManager:
             # Otherwise, grab the next frame from the stream
             frame = frame.array
             
+            cv2.imshow("Actual frame", frame)
+            
+            cv2.waitKey(1) & 0xFF
+            
             rawCapture.truncate(0)
 
             detection_results = self.detector.detect(frame, self.video_resolution["width"], self.video_resolution["height"])
@@ -170,6 +174,7 @@ class DetectionManager:
         #videostream.stop()
 
         #return final_boxes
+        '''
 
 
     def determineSecondsForDetection(self, detectionTimeString):
@@ -221,7 +226,7 @@ class DetectionManager:
                     }
                 myfile.close()
                 return detection_object
-                '''
+
                 detection_objects.append(detection_object)
         return detection_objects
 '''

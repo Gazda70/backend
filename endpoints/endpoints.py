@@ -56,20 +56,21 @@ def setup_detection():
     #print("Python version: " + platform.python_version())
     cv2.imread("/home/pi/Desktop/happy_people.jpeg")
     req = request.get_json()
+    print("req: ")
+    print(req)
     print("startDate: ")
     startDate = ast.literal_eval(req["startDate"])
     startTime = ast.literal_eval(req["startTime"])
-    print(startTime["hour"] + ":" + startTime["minute"] + " " + startTime["halfOfDay"])
-    print(startDate["month"] + " " + startDate["day"])
-    schedule_detection(startDate["month"] + " " + startDate["day"],
-                       startTime["hour"] + ":" + startTime["minute"], "not specified")
+    endTime = ast.literal_eval(req["endTime"])
+    print(startDate)
+    print("startTime: ")
+    print(startTime)
+    print("endTime")
+    print(endTime)
+    schedule_detection(startDate, startTime, endTime)
                        
     response_body = {
-      "startDay": "Wed",
-      "endDay": "Thurs",
-      "startTime": "12:34",
-      "endTime": "15:20",
-      "totalDetections": []
+        "response":"Request OK"
     }
     response_body_json = json.dumps(response_body)
     response = make_response(response_body_json, 200)
