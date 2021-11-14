@@ -125,7 +125,7 @@ class Detector:
         # (1,3,network_size, network_size)
 
         labeling = infer(tf.constant(x))
-        return str(labeling)
+        return labeling
         '''
         print(labeling)
 

@@ -16,6 +16,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 from database_manager import DatabaseManager
 import pymongo
+import ast
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
 category_map = {
@@ -109,7 +110,7 @@ class DetectionManager:
         self.model_paths = {"SSD_Mobilenet_v2_320x320":"/home/pi/Desktop/My_Server/backend/models/"}
         self.category_maps = {"SSD_Mobilenet_v2_320x320":{1: "person"}}
 
-    def setupDetection(self, detection_period_id, neuralNetworkType="SSD_Mobilenet_v2_320x320", detectionSeconds=10,  obj_threshold=0.3,
+    def setupDetection(self, detection_period_id, neuralNetworkType="SSD_Mobilenet_v2_320x320", detectionSeconds=60,  obj_threshold=0.3,
                        video_resolution={"width":320, "height":320}, framerate=30):
         self.neuralNetworkType = neuralNetworkType
         self.obj_threshold = obj_threshold
@@ -128,6 +129,7 @@ class DetectionManager:
         resolution={"width":320, "height":320}
         framerate=30
         camera = PiCamera()
+        camera.rotation = 180
         camera.resolution = (resolution["width"], resolution["height"])
         camera.framerate = framerate
         rawCapture = PiRGBArray(camera, size = (resolution["width"], resolution["height"]))
@@ -137,7 +139,7 @@ class DetectionManager:
         #video_stream = VideoStream(self.video_resolution, self.framerate)
         
         #video_stream.start()
-        
+        detection_results = None
     
             #frame = video_stream.read()
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -152,12 +154,19 @@ class DetectionManager:
             rawCapture.truncate(0)
 
             detection_results = self.detector.detect(frame, self.video_resolution["width"], self.video_resolution["height"])
+            
+            for box, score, det_class in zip(detection_results['detection_boxes'][0], detection_results['detection_scores'][0], detection_results['detection_classes'][0]):
+                 if score > 0.2 and int(det_class) == 1: 
+                    frame = cv2.rectangle(frame, (int(box[1] * resolution["width"]), int(box[0] * resolution["height"])),
+                                          (int(box[3] * resolution["width"]), int(box[2] * resolution["height"])), (255, 0, 0), 2)
+        
+            print(detection_results)
 
             current_time = time.time()
             elapsed_time = current_time - start_time
             
             #detection_objects.append({"frame_time":current_time, "detections":predicted_boxes})
-            self.database_manager.insertDetection(current_time, detection_results, self.detection_period_id)
+            #self.database_manager.insertDetection(current_time, detection_results, self.detection_period_id)
             
             if elapsed_time > self.detectionSeconds:
                 #self.writeDetectionPeriodSummary(detection_objects, start_time, self.detectionSeconds)
@@ -230,3 +239,9 @@ class DetectionManager:
                 detection_objects.append(detection_object)
         return detection_objects
 '''
+        
+dm = DetectionManager()
+
+dm.setupDetection(1000)
+
+dm.detect()
