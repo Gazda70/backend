@@ -18,7 +18,8 @@ class DatabaseManager:
         return return_value.inserted_id
         
     def insertDetection(self, time, detections, detectionPeriodId):
-        self.detectionCollection.insert_one({"time":time, "detections":detections, "detectionPeriodId":detectionPeriodId})
+        print("When inserting, detectionPeriodId: " + str(detectionPeriodId))
+        self.detectionCollection.insert_one({"time":time, "detections":detections, "detectionPeriodId":str(detectionPeriodId)})
         
     def findDetectionsForDetectionPeriod(self, detectionPeriodId):
         self.detectionCollection.find({"detectionPeriodId":detectionPeriodId})

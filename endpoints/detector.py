@@ -2,6 +2,7 @@ import tensorflow as tf
 import cv2
 import numpy as np
 from tensorflow import keras
+import time
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
 category_map = {
@@ -92,7 +93,13 @@ image = cv2.imread("/home/pi/Desktop/happyPeople.jpg")
 
 class Detector:
     def __init__(self, model_path, category_map):
-        self.model = tf.saved_model.load(model_path)
+        start_time = time.time()
+        #self.model = tf.saved_model.load(model_path)
+        #self.model = tf.lite.Interpreter(model_path="/home/pi/Desktop/My_Server/backend/models/tf_lite/model.tflite")
+        current_time = time.time()
+        elapsed_time = current_time - start_time
+        print("Time loading the model: " + str(elapsed_time))
+        #self.model = tf.lite.Interpreter(model_path="/home/pi/Desktop/My_Server/backend/models/tf_lite/model.tflite")
         self.category_map = category_map
         
     
@@ -115,7 +122,7 @@ class Detector:
         # load model
         '''
         #print(list(loaded.signatures.keys()))  # ["serving_default"]
-
+        '''
         infer = self.model.signatures["serving_default"]#{'output_0': TensorSpec(shape=(1, 2), dtype=tf.float32, name='output_0')}
 
         # convert img to tf
@@ -126,6 +133,7 @@ class Detector:
 
         labeling = infer(tf.constant(x))
         return labeling
+        '''
         '''
         print(labeling)
 
@@ -160,9 +168,14 @@ class Detector:
         #print(predict_class ) # int, depends on your task -- mine was img classfication
         #self.model_SSD.setInput(cv2.dnn.blobFromImage(frame_resized, size=(img_w, img_h), swapRB=True))
         #output = self.model_SSD.forward()
-
-        #output = model_SSD.predict(cv2.dnn.blobFromImage(frame_resized, size=(img_w, img_h), swapRB=True))
-        #print(output)
+        '''
+        x = tf.keras.preprocessing.image.img_to_array(image, dtype='uint8')
+        x = tf.keras.applications.mobilenet.preprocess_input(
+        x[tf.newaxis,...]).astype(dtype='uint8')
+        output = self.model.predict(cv2.dnn.blobFromImage(frame_resized, size=(img_w, img_h), swapRB=True))
+        print(output)
+        return output
+        '''
         '''
         detector = hub.load("https://tfhub.dev/tensorflow/ssd_mobilenet_v2/2")
         detector_output = detector(frame_suited)
@@ -172,27 +185,41 @@ class Detector:
         '''
         # Load TFLite model and allocate tensors.
         interpreter = tf.lite.Interpreter(model_path="/home/pi/Desktop/My_Server/backend/models/tf_lite/model.tflite")
-        interpreter.allocate_tensors()
+        '''
+        '''
+        self.model.allocate_tensors()
 
         # Get input and output tensors.
-        input_details = interpreter.get_input_details()
-        output_details = interpreter.get_output_details()
+        input_details = self.model.get_input_details()
+        output_details = self.model.get_output_details()
 
         # Test model on random input data.
         input_shape = input_details[0]['shape']
         print("input_details: ")
         print(input_details)
         print("input_blob: ")
-        input_blob = cv2.dnn.blobFromImage(frame_resized, size=(300, 300), swapRB=True)
-        print(input_blob.shape)
+        #input_blob = cv2.dnn.blobFromImage(image, size=(300, 300), swapRB=True)
+        x = tf.keras.preprocessing.image.img_to_array(image, dtype='uint8')
+        x = tf.keras.applications.mobilenet.preprocess_input(
+        x[tf.newaxis,...]).astype(dtype='uint8')
+        #print(input_blob.shape)
         #input_data = np.array(np.random.random_sample(input_shape), dtype=np.uint8)
         #input_data = np.array(cv2.dnn.blobFromImage(frame_resized, size=(300, 300), swapRB=True), dtype=np.uint8)
-        interpreter.set_tensor(input_details[0]['index'], frame_suited)
+        self.model.set_tensor(input_details[0]['index'], x)
 
-        interpreter.invoke()
+        self.model.invoke()
 
         # The function `get_tensor()` returns a copy of the tensor data.
         # Use `tensor()` in order to get a pointer to the tensor.
-        output_data = interpreter.get_tensor(output_details[0]['index'])
+        output_data = self.model.get_tensor(output_details[0]['index'])
         print(output_data)
         '''
+        
+        xml_file = '/home/pi/Desktop/My_Server/backend/endpoints/haarcascades/haarcascade_upperbody.xml'
+        classifier = cv2.CascadeClassifier(xml_file)
+        
+        gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        faces_rect = classifier.detectMultiScale(
+            gray_img, scaleFactor=1.1, minNeighbors=9)
+        return faces_rect

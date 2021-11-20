@@ -17,6 +17,9 @@ from picamera import PiCamera
 from database_manager import DatabaseManager
 import pymongo
 import ast
+import tensorflow as tf
+import nms
+from detector_cv2 import detect_cv2
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
 category_map = {
@@ -119,6 +122,7 @@ class DetectionManager:
         self.framerate = framerate
         self.detector = Detector(self.model_paths["SSD_Mobilenet_v2_320x320"], self.category_maps["SSD_Mobilenet_v2_320x320"])
         self.database_manager = DatabaseManager()
+        print("In setupDetection: " + str(detection_period_id))
         self.detection_period_id = detection_period_id
         print("Starting detection: " + str(datetime.datetime.now()))
 
@@ -126,7 +130,7 @@ class DetectionManager:
         print("Ending detection: " + str(datetime.datetime.now()))
 
     def detect(self):
-        resolution={"width":320, "height":320}
+        resolution={"width":1200, "height":720}
         framerate=30
         camera = PiCamera()
         camera.rotation = 180
@@ -140,33 +144,66 @@ class DetectionManager:
         
         #video_stream.start()
         detection_results = None
+        '''
+        xml_file = '/home/pi/Desktop/My_Server/backend/endpoints/haarcascades/haarcascade_frontalface_default.xml'
+        classifier = cv2.CascadeClassifier(xml_file)
+        '''
     
             #frame = video_stream.read()
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
             # Otherwise, grab the next frame from the stream
-            frame = frame.array
-            
-            cv2.imshow("Actual frame", frame)
-            
-            cv2.waitKey(1) & 0xFF
+            img = frame.array
             
             rawCapture.truncate(0)
 
-            detection_results = self.detector.detect(frame, self.video_resolution["width"], self.video_resolution["height"])
+            #detection_results = self.detector.detect(frame, self.video_resolution["width"], self.video_resolution["height"])
+            '''
+            selected_indices = tf.image.non_max_suppresion(
+                boxes=detection_results['detection_boxes'][0],
+                scores=detection_results['detection_scores'][0],
+                max_output_size=10,
+                iou_threshold=0.5,
+                score_threshold=0.2
+                )
+            
+            selected_boxes = tf.gather(detection_results['detection_boxes'][0], selected_indices)
+            '''
+            
+            #print("How many detected boxes were created: " + str(len(detection_results['detection_boxes'][0].numpy())))
+            
+            #selected_boxes = nms.non_max_suppression_fast(detection_results['detection_boxes'][0].numpy(), 0.4)
+            '''
+            selected_boxes = detection_results['detection_boxes'][0]
+            
+            for box in selected_boxes:
+                frame = cv2.rectangle(frame, (int(box[1] * resolution["width"]), int(box[0] * resolution["height"])),
+                                          (int(box[3] * resolution["width"]), int(box[2] * resolution["height"])), (0, 255, 0), 2)
             
             for box, score, det_class in zip(detection_results['detection_boxes'][0], detection_results['detection_scores'][0], detection_results['detection_classes'][0]):
                  if score > 0.2 and int(det_class) == 1: 
                     frame = cv2.rectangle(frame, (int(box[1] * resolution["width"]), int(box[0] * resolution["height"])),
                                           (int(box[3] * resolution["width"]), int(box[2] * resolution["height"])), (255, 0, 0), 2)
-        
-            print(detection_results)
+            '''
+            '''
+            gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            
+            faces_rect = classifier.detectMultiScale(
+                gray_img, scaleFactor=1.1, minNeighbors=9)
+            
+            for (x, y, w, h) in faces_rect:
+                frame = cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
+            '''
+            number_of_people = detect_cv2(img)    
 
+            #print(detection_results)
+
+            #cv2.imwrite('\home\pi\Desktop\my_img', frame)
             current_time = time.time()
             elapsed_time = current_time - start_time
             
             #detection_objects.append({"frame_time":current_time, "detections":predicted_boxes})
-            #self.database_manager.insertDetection(current_time, detection_results, self.detection_period_id)
+            self.database_manager.insertDetection(current_time, number_of_people, self.detection_period_id)
             
             if elapsed_time > self.detectionSeconds:
                 #self.writeDetectionPeriodSummary(detection_objects, start_time, self.detectionSeconds)
@@ -179,7 +216,7 @@ class DetectionManager:
 
         camera.stop_preview()
         camera.close()
-        #cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
         #videostream.stop()
 
         #return final_boxes
@@ -239,9 +276,3 @@ class DetectionManager:
                 detection_objects.append(detection_object)
         return detection_objects
 '''
-        
-dm = DetectionManager()
-
-dm.setupDetection(1000)
-
-dm.detect()
