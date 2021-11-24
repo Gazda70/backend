@@ -2,6 +2,7 @@ from subprocess import call
 import sys
 import os
 from database_manager import DatabaseManager
+import time
 
 def schedule_detection(start_date, start_time, end_time, neuralNetworkType="SSD_Mobilenet_v2_320x320", obj_threshold=0.3,
                        video_resolution={"width":320, "height":320}, framerate=30):
@@ -13,11 +14,13 @@ def schedule_detection(start_date, start_time, end_time, neuralNetworkType="SSD_
     
     print("detectionSeconds: \n")
     print(detectionSeconds)
-    
+    '''
     detection_period_id = database_manager.insertDetectionPeriod(dateDictToDateString(start_date), timeDictToTimeString(start_time),
                                                                  timeDictToTimeString(end_time), neuralNetworkType, detectionSeconds,  obj_threshold,
                        video_resolution, framerate)
-    
+    '''
+    detection_period_id = database_manager.insertDetectionPeriod(time_date_to_timestamp(start_date, start_time), time_date_to_timestamp(start_date, end_time),
+                                                                 neuralNetworkType, detectionSeconds, obj_threshold, video_resolution, framerate)
     command_string_list = []
     command_string_list.append("python3.7 ")
     command_string_list.append("scheduled_detection.py")
@@ -72,3 +75,10 @@ def timeDictToTimeString(time_dict):
 
 def dateDictToDateString(date_dict):
     return date_dict["month"] + " " + date_dict["day"] + " " + date_dict["year"]
+
+def time_date_to_timestamp(date_dict, time_dict):
+    timezone_string = "+00:00"
+    timestamp = time.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
+                                  + 'T' + time_dict["hour"] + ':' + time_dict["minute"] + timezone_string, '%Y-%b-%dT%H:%M%z')
+    print("Timestamp: " + str(timestamp))
+    return timestamp

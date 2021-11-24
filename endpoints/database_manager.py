@@ -1,4 +1,5 @@
 import pymongo
+import time
 
 class DatabaseManager:
     def __init__(self):
@@ -6,33 +7,48 @@ class DatabaseManager:
 
         self.db = self.client["PeopleCounterDatabase"]
 
-        self.detectionPeriodCollection = self.db["DetectionPeriod"]
+        self.detection_period_collection = self.db["DetectionPeriod"]
         
-        self.detectionCollection = self.db["Detection"]
+        self.detection_collection = self.db["Detection"]
         
-    def insertDetectionPeriod(self, startDate, startTime, endTime, neuralNetworkType, detectionSeconds,  obj_threshold,
+    def insertDetectionPeriod(self, start_time, end_time, neural_network_type, detection_seconds,  obj_threshold,
                        video_resolution, framerate):
-        return_value = self.detectionPeriodCollection.insert_one({"startDate":startDate, "startTime":startTime, "endTime":endTime, "detectionSeconds":detectionSeconds,
-                                                                  "neuralNetworkType":neuralNetworkType, "obj_threshold":obj_threshold,
+        
+        return_value = self.detection_period_collection.insert_one({"start_time":start_time, "end_time":end_time, "detection_seconds":detection_seconds,
+                                                          "neural_network_type":neural_network_type, "obj_threshold":obj_threshold, "video_resolution":video_resolution, "framerate":framerate})
+        '''
+        return_value = self.detection_period_collection.insert_one({"start_date":start_date, "start_time":start_time, "end_time":end_time, "detection_seconds":detection_seconds,
+                                                                  "neural_network_type":neural_network_type, "obj_threshold":obj_threshold,
                        "video_resolution":video_resolution, "framerate":framerate})
+        '''
         return return_value.inserted_id
+    
         
-    def insertDetection(self, time, detections, detectionPeriodId):
-        print("When inserting, detectionPeriodId: " + str(detectionPeriodId))
-        self.detectionCollection.insert_one({"time":time, "detections":detections, "detectionPeriodId":str(detectionPeriodId)})
+    def insertDetection(self, time, detections, detection_period_id):
+        print("When inserting, detection_period_id: " + str(detection_period_id))
+        self.detection_collection.insert_one({"time":time, "detections":detections, "detection_period_id":str(detection_period_id)})
         
-    def findDetectionsForDetectionPeriod(self, detectionPeriodId):
-        self.detectionCollection.find({"detectionPeriodId":detectionPeriodId})
+        
+    def findDetectionsForDetectionPeriod(self, detection_period_id):
+        return self.detection_collection.find({"detection_period_id":detection_period_id})
+        
+        
+    def findDetectionPeriodsForGivenDate(self, date):
+        
+        criteria = {"start_date":date}
+        return self.detection_period_collection.find(criteria)
+    
+    
+    def findDetectionPeriodsForGivenDateRange(self, start_date_range, end_date_range):
+        
+        criteria = {"start_date":{"$gte":start_date_range, "$lte": end_date_range}}
+        return self.detection_period_collection.find(criteria)
         
         
 
-'''
-detectionPeriod = {"startDate": "03/11/2021", "startTime":"19:16", "endTime":"20:30", "neuralNetwork":"SSD Mobilenet v2 320x320", "certainityThreshold":"0.4"}
-
-x = mycol.insert_one(detectionPeriod)
-
-print(x.inserted_id)
-'''
-
-#for x in res: 
-#    print(x)
+def time_date_to_timestamp(time_dict, date_dict):
+    timezone_string = "+00:00"
+    timestamp = time.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
+                                  + 'T' + time_dict["hour"] + ':' + time_dict["minute"] + timezone_string, '%Y-%b-%dT%H:%M%z')
+    print("Timestamp: " + str(timestamp))
+    return timestamp

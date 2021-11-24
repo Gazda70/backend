@@ -8,6 +8,7 @@ import json
 import time
 import ast
 from detection_scheduler import schedule_detection
+from database_manager import DatabaseManager
 #from Detection import detect
 # ... other import statements ...
 
@@ -39,17 +40,19 @@ def check_if_ongoing_detection():
 
 @app.route('/predictions')
 def get_predictions():
-    pass
-    '''
-    detection_manager = DetectionManager()
-    response_body = detection_manager.get_detection_data()
+    req = request.get_json()
+    database_manager = DatabaseManager()
+    if req["mode"] == "period":
+        response_body = database_manager.findDetectionPeriodsForGivenDateRange(req["startDate"], req["endDate"])
+    elif req["mode"] == "single_day":
+        response_body = database_manager.findDetectionPeriodsForGivenDate(req["date"])
     response_body_json = json.dumps(response_body)
     response = make_response(response_body_json, 200)
     response.mimetype = "application/json"
     print('Response body: ')
     print(response_body_json)
     return response
-    '''
+
 
 @app.route('/setup', methods=['GET','POST'])
 def setup_detection():
@@ -58,16 +61,16 @@ def setup_detection():
     req = request.get_json()
     print("req: ")
     print(req)
-    print("startDate: ")
-    startDate = ast.literal_eval(req["startDate"])
-    startTime = ast.literal_eval(req["startTime"])
-    endTime = ast.literal_eval(req["endTime"])
-    print(startDate)
-    print("startTime: ")
-    print(startTime)
-    print("endTime")
-    print(endTime)
-    schedule_detection(startDate, startTime, endTime)
+    print("start_date: ")
+    start_date = ast.literal_eval(req["startDate"])
+    start_time = ast.literal_eval(req["startTime"])
+    end_time = ast.literal_eval(req["endTime"])
+    print(start_date)
+    print("start_time: ")
+    print(start_time)
+    print("end_time")
+    print(end_time)
+    schedule_detection(start_date, start_time, end_time)
                        
     response_body = {
         "response":"Request OK"
