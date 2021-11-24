@@ -1,5 +1,5 @@
 import pymongo
-import time
+import datetime
 
 class DatabaseManager:
     def __init__(self):
@@ -48,7 +48,7 @@ class DatabaseManager:
 
 def time_date_to_timestamp(time_dict, date_dict):
     timezone_string = "+00:00"
-    timestamp = time.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
+    timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
                                   + 'T' + time_dict["hour"] + ':' + time_dict["minute"] + timezone_string, '%Y-%b-%dT%H:%M%z')
     print("Timestamp: " + str(timestamp))
     return timestamp

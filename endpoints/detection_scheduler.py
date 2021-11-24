@@ -2,7 +2,7 @@ from subprocess import call
 import sys
 import os
 from database_manager import DatabaseManager
-import time
+import datetime
 
 def schedule_detection(start_date, start_time, end_time, neuralNetworkType="SSD_Mobilenet_v2_320x320", obj_threshold=0.3,
                        video_resolution={"width":320, "height":320}, framerate=30):
@@ -78,7 +78,7 @@ def dateDictToDateString(date_dict):
 
 def time_date_to_timestamp(date_dict, time_dict):
     timezone_string = "+00:00"
-    timestamp = time.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
+    timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
                                   + 'T' + time_dict["hour"] + ':' + time_dict["minute"] + timezone_string, '%Y-%b-%dT%H:%M%z')
     print("Timestamp: " + str(timestamp))
     return timestamp
