@@ -92,7 +92,7 @@ img_height=300
 image = cv2.imread("/home/pi/Desktop/happyPeople.jpg")
 
 class Detector:
-    def __init__(self, model_path, category_map):
+    def __init__(self, model_path, category_map, model):
         start_time = time.time()
         #self.model = tf.saved_model.load(model_path)
         #self.model = tf.lite.Interpreter(model_path="/home/pi/Desktop/My_Server/backend/models/tf_lite/model.tflite")
