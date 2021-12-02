@@ -35,14 +35,26 @@ class DatabaseManager:
         
     def findDetectionPeriodsForGivenDate(self, date):
         
-        criteria = {"start_date":date}
+        criteria = {"start_time":time}
         return self.detection_period_collection.find(criteria)
     
     
     def findDetectionPeriodsForGivenDateRange(self, start_date_range, end_date_range):
         
-        criteria = {"start_date":{"$gte":start_date_range, "$lte": end_date_range}}
+        criteria = {"start_time":{"$gte":start_date_range, "$lte": end_date_range}}
         return self.detection_period_collection.find(criteria)
+    
+    def findAllDetectionsForGivenDetectionPeriod(detection_period_id):
+        
+        criteria = {"detection_period_id":detection_period_id}
+        return self.detection_collection.find(criteria)
+    
+    def sumPeopleForDetections(detections):
+        people_count = 0
+        for det in detections:
+            people_count += det["detections"]
+        return people_count
+            
         
         
 
@@ -50,5 +62,12 @@ def time_date_to_timestamp(time_dict, date_dict):
     timezone_string = "+00:00"
     timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
                                   + 'T' + time_dict["hour"] + ':' + time_dict["minute"] + timezone_string, '%Y-%b-%dT%H:%M%z')
+    print("Timestamp: " + str(timestamp))
+    return timestamp
+
+
+def date_to_timestamp(date_dict):
+    timezone_string = "+00:00"
+    timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"],'%Y-%b-%d')
     print("Timestamp: " + str(timestamp))
     return timestamp

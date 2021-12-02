@@ -8,7 +8,7 @@ import json
 import time
 import ast
 from detection_scheduler import schedule_detection
-from database_manager import DatabaseManager
+from database_manager import DatabaseManager, date_to_timestamp, findAllDetectionsForGivenDetectionPeriod, sumPeopleForDetections
 #from Detection import detect
 # ... other import statements ...
 
@@ -38,14 +38,29 @@ def check_if_ongoing_detection():
     return is_ongoing
 '''
 
-@app.route('/predictions')
+@app.route('/predictions', methods=['GET','POST'])
 def get_predictions():
     req = request.get_json()
+    print("Request:")
+    print(req)
+    print("Date: ")
+    print(ast.literal_eval(req["startDate"]))
+    #print(date_to_timestamp(ast.literal_eval(req["startDate"])))
     database_manager = DatabaseManager()
     if req["mode"] == "period":
-        response_body = database_manager.findDetectionPeriodsForGivenDateRange(req["startDate"], req["endDate"])
+        results = database_manager.findDetectionPeriodsForGivenDateRange(date_to_timestamp(ast.literal_eval(req["startDate"])),
+                                                                         date_to_timestamp(ast.literal_eval(req["endDate"])))
     elif req["mode"] == "single_day":
-        response_body = database_manager.findDetectionPeriodsForGivenDate(req["date"])
+        results = database_manager.findDetectionPeriodsForGivenDate(date_to_timestamp(ast.literal_eval(req["startDate"])))
+    detection_period_list = list(results)
+    response_body = []
+    for det_per in detection_period_list:
+        detections = database_manager.findAllDetectionsForGivenDetectionPeriod(det_per['_id'])
+        people_count = database_manager.sumPeopleForDetections(detections)
+        response_body.append({"start_time":det_per["start_time"], "people_count":people_count})
+        
+    print("Response body: ")
+    print(response_body)
     response_body_json = json.dumps(response_body)
     response = make_response(response_body_json, 200)
     response.mimetype = "application/json"

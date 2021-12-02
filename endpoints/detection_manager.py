@@ -11,7 +11,7 @@ import datetime
 import time
 import numpy as np
 import os
-from detector import Detector
+from detector_cv2 import Detector
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from database_manager import DatabaseManager
@@ -19,7 +19,6 @@ import pymongo
 import ast
 import tensorflow as tf
 import nms
-from detector_cv2 import detect_cv2
 
 SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/"
 category_map = {
@@ -120,7 +119,7 @@ class DetectionManager:
         self.detectionSeconds = detectionSeconds
         self.video_resolution = video_resolution
         self.framerate = framerate
-        self.detector = Detector(self.model_paths["SSD_Mobilenet_v2_320x320"], self.category_maps["SSD_Mobilenet_v2_320x320"])
+        self.detector = Detector("SSD_Mobilenet_v2_320x320")
         self.database_manager = DatabaseManager()
         print("In setupDetection: " + str(detection_period_id))
         self.detection_period_id = detection_period_id
@@ -194,7 +193,7 @@ class DetectionManager:
             for (x, y, w, h) in faces_rect:
                 frame = cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
             '''
-            number_of_people = detect_cv2(img)    
+            number_of_people = self.detector.detect_cv2(img)    
 
             #print(detection_results)
 
