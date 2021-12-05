@@ -1,4 +1,3 @@
-
 # coding=utf
 import cv2
 from flask import Flask, jsonify, request, make_response
@@ -6,9 +5,10 @@ from flask_cors import CORS
 #from detection_manager import DetectionManager
 import json
 import time
+import math
 import ast
 from detection_scheduler import schedule_detection
-from database_manager import DatabaseManager, date_to_timestamp, findAllDetectionsForGivenDetectionPeriod, sumPeopleForDetections
+from database_manager import DatabaseManager, date_to_timestamp
 #from Detection import detect
 # ... other import statements ...
 
@@ -53,12 +53,21 @@ def get_predictions():
     elif req["mode"] == "single_day":
         results = database_manager.findDetectionPeriodsForGivenDate(date_to_timestamp(ast.literal_eval(req["startDate"])))
     detection_period_list = list(results)
-    response_body = []
+    print("Detection period list: " + str(detection_period_list))
+    detection_period_stats = []
     for det_per in detection_period_list:
-        detections = database_manager.findAllDetectionsForGivenDetectionPeriod(det_per['_id'])
-        people_count = database_manager.sumPeopleForDetections(detections)
-        response_body.append({"start_time":det_per["start_time"], "people_count":people_count})
-        
+        print("Object id: " + str(det_per.get('_id')))
+        detections = database_manager.findAllDetectionsForGivenDetectionPeriod(str(det_per.get('_id')))
+        detections_list = list(detections)
+        print(len(detections_list))
+        print(len(detections_list))
+        people_min = database_manager.minDetectedPeople(detections_list)
+        people_max = database_manager.maxDetectedPeople(detections_list) 
+        start_time = det_per["start_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
+        print("Start time: " + start_time)
+        detection_period_stats.append({"start_time":start_time, "people_min":people_min, 'people_max':people_max})
+    
+    response_body = {"detection_period_stats":detection_period_stats}
     print("Response body: ")
     print(response_body)
     response_body_json = json.dumps(response_body)

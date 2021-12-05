@@ -1,5 +1,6 @@
 import pymongo
 import datetime
+import math
 
 class DatabaseManager:
     def __init__(self):
@@ -44,12 +45,26 @@ class DatabaseManager:
         criteria = {"start_time":{"$gte":start_date_range, "$lte": end_date_range}}
         return self.detection_period_collection.find(criteria)
     
-    def findAllDetectionsForGivenDetectionPeriod(detection_period_id):
+    def findAllDetectionsForGivenDetectionPeriod(self, detection_period_id):
         
         criteria = {"detection_period_id":detection_period_id}
         return self.detection_collection.find(criteria)
+                
+    def minDetectedPeople(self, detections):
+       minimal = math.inf
+       for det in detections:
+           if det["detections"] < minimal:
+               minimal = det["detections"]
+       return minimal
     
-    def sumPeopleForDetections(detections):
+    def maxDetectedPeople(self, detections):
+       maximal = 0
+       for det in detections:
+           if det["detections"] > maximal:
+               maximal = det["detections"]
+       return maximal      
+            
+    def sumPeopleForDetections(self, detections):
         people_count = 0
         for det in detections:
             people_count += det["detections"]
