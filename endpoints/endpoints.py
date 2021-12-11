@@ -8,7 +8,7 @@ import time
 import math
 import ast
 from detection_scheduler import schedule_detection
-from database_manager import DatabaseManager, date_to_timestamp
+from database_manager import DatabaseManager, date_to_timestamp, divideIntoSamePeopleCountCollections
 #from Detection import detect
 # ... other import statements ...
 
@@ -61,8 +61,11 @@ def get_predictions():
         detections_list = list(detections)
         print(len(detections_list))
         print(len(detections_list))
-        people_min = database_manager.minDetectedPeople(detections_list)
-        people_max = database_manager.maxDetectedPeople(detections_list) 
+        averaged_detections = divideIntoSamePeopleCountCollections(detections_list, 2)
+        print("averaged_detections")
+        print(averaged_detections)
+        people_min = database_manager.minDetectedPeople(averaged_detections)
+        people_max = database_manager.maxDetectedPeople(averaged_detections) 
         start_time = det_per["start_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
         print("Start time: " + start_time)
         detection_period_stats.append({"start_time":start_time, "people_min":people_min, 'people_max':people_max})

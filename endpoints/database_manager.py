@@ -71,7 +71,21 @@ class DatabaseManager:
         return people_count
             
         
-        
+def divideIntoSamePeopleCountCollections(detections, minimal_same_count_frame_number):
+    averaged_detections = []
+    same_count_frame_number = 1
+    previous_count = 0
+    for detection in detections:
+        if detection["detections"] != previous_count:
+            if same_count_frame_number >= minimal_same_count_frame_number:
+                averaged_detections.append({"detections":previous_count,"same_count_frame_number":same_count_frame_number})
+                #averaged_detections.append(previous_count)
+            same_count_frame_number = 1
+        previous_count = detection["detections"]
+        same_count_frame_number += 1
+    return averaged_detections
+            
+    
 
 def time_date_to_timestamp(time_dict, date_dict):
     timezone_string = "+00:00"
