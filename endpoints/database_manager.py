@@ -35,8 +35,8 @@ class DatabaseManager:
         
         
     def findDetectionPeriodsForGivenDate(self, date):
-        
-        criteria = {"start_time":time}
+        next_day_date = date + datetime.timedelta(days=1)
+        criteria = {"start_time":{"$gte":date, "$lt": next_day_date}}
         return self.detection_period_collection.find(criteria)
     
     
@@ -51,7 +51,7 @@ class DatabaseManager:
         return self.detection_collection.find(criteria)
                 
     def minDetectedPeople(self, detections):
-       minimal = math.inf
+       minimal = self.maxDetectedPeople(detections)
        for det in detections:
            if det["detections"] < minimal:
                minimal = det["detections"]
@@ -62,14 +62,21 @@ class DatabaseManager:
        for det in detections:
            if det["detections"] > maximal:
                maximal = det["detections"]
-       return maximal      
-            
-    def sumPeopleForDetections(self, detections):
+       return maximal
+    
+    def arithmeticAverageDetectedPeople(self, detections):
         people_count = 0
         for det in detections:
             people_count += det["detections"]
-        return people_count
-            
+            '''
+        print("Before int average: " + str(people_count/len(detections)))
+        print("Average:"
+              + str(math.ceil(people_count/len(detections))))
+              '''
+        #use math.ceil to get bigger average
+        if len(detections) != 0:
+            return math.ceil(people_count/len(detections))
+        return 0
         
 def divideIntoSamePeopleCountCollections(detections, minimal_same_count_frame_number):
     averaged_detections = []

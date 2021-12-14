@@ -22,6 +22,7 @@ def schedule_detection(start_date, start_time, end_time, neuralNetworkType="SSD_
     detection_period_id = database_manager.insertDetectionPeriod(time_date_to_timestamp(start_date, start_time), time_date_to_timestamp(start_date, end_time),
                                                                  neuralNetworkType, detectionSeconds, obj_threshold, video_resolution, framerate)
     command_string_list = []
+    command_string_list.append("echo ")
     command_string_list.append("python3.7 ")
     command_string_list.append("scheduled_detection.py")
     command_string_list.append(" --detection_period_id=")

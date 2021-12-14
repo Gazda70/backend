@@ -9,6 +9,7 @@ import math
 import ast
 from detection_scheduler import schedule_detection
 from database_manager import DatabaseManager, date_to_timestamp, divideIntoSamePeopleCountCollections
+import datetime
 #from Detection import detect
 # ... other import statements ...
 
@@ -51,10 +52,15 @@ def get_predictions():
         results = database_manager.findDetectionPeriodsForGivenDateRange(date_to_timestamp(ast.literal_eval(req["startDate"])),
                                                                          date_to_timestamp(ast.literal_eval(req["endDate"])))
     elif req["mode"] == "single_day":
+        start_date = date_to_timestamp(ast.literal_eval(req["startDate"]))
+        print("First date: " + str(start_date))
+        end_date = start_date + datetime.timedelta(days=1)
+        print("End date: " + str(end_date))
         results = database_manager.findDetectionPeriodsForGivenDate(date_to_timestamp(ast.literal_eval(req["startDate"])))
     detection_period_list = list(results)
     print("Detection period list: " + str(detection_period_list))
     detection_period_stats = []
+    total_averaged_detections = []
     for det_per in detection_period_list:
         print("Object id: " + str(det_per.get('_id')))
         detections = database_manager.findAllDetectionsForGivenDetectionPeriod(str(det_per.get('_id')))
@@ -62,15 +68,24 @@ def get_predictions():
         print(len(detections_list))
         print(len(detections_list))
         averaged_detections = divideIntoSamePeopleCountCollections(detections_list, 2)
+        total_averaged_detections = total_averaged_detections + averaged_detections
         print("averaged_detections")
         print(averaged_detections)
         people_min = database_manager.minDetectedPeople(averaged_detections)
-        people_max = database_manager.maxDetectedPeople(averaged_detections) 
+        people_max = database_manager.maxDetectedPeople(averaged_detections)
+        people_avg = database_manager.arithmeticAverageDetectedPeople(averaged_detections)
         start_time = det_per["start_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
+        end_time = det_per["end_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
         print("Start time: " + start_time)
-        detection_period_stats.append({"start_time":start_time, "people_min":people_min, 'people_max':people_max})
+        detection_period_stats.append({"start_time":start_time, "end_time":end_time, "people_min":people_min,
+                                       'people_max':people_max, 'people_avg':people_avg})
     
-    response_body = {"detection_period_stats":detection_period_stats}
+    print("Total averaged detections")
+    print(total_averaged_detections)
+    whole_day_stats = {"people_min":database_manager.minDetectedPeople(total_averaged_detections),
+                       'people_max':database_manager.maxDetectedPeople(total_averaged_detections),
+                       'people_avg':database_manager.arithmeticAverageDetectedPeople(total_averaged_detections)}
+    response_body = {"detection_period_stats":detection_period_stats, "whole_day_stats":whole_day_stats}
     print("Response body: ")
     print(response_body)
     response_body_json = json.dumps(response_body)
