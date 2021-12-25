@@ -165,20 +165,21 @@ class Detector:
                 if class_id == 1:
                     number_of_people += 1
                 # map the class id to the class
-                class_name = self.class_names[int(class_id)-1]
-                color = COLORS[int(class_id)]
-                # get the bounding box coordinates
-                box_x = detection[3] * image_width
-                box_y = detection[4] * image_height
-                # get the bounding box width and height
-                box_width = detection[5] * image_width
-                box_height = detection[6] * image_height
-                # draw a rectangle around each detected object
-                cv2.rectangle(image, (int(box_x), int(box_y)), (int(box_width), int(box_height)), color, thickness=2)
-                # put the class name text on the detected object
-                cv2.putText(image, class_name, (int(box_x), int(box_y - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-                # put the FPS text on top of the frame
-                cv2.putText(image, f"{fps:.2f} FPS", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                if int(class_id) < len(self.class_names):
+                    class_name = self.class_names[int(class_id)-1]
+                    color = COLORS[int(class_id)]
+                    # get the bounding box coordinates
+                    box_x = detection[3] * image_width
+                    box_y = detection[4] * image_height
+                    # get the bounding box width and height
+                    box_width = detection[5] * image_width
+                    box_height = detection[6] * image_height
+                    # draw a rectangle around each detected object
+                    cv2.rectangle(image, (int(box_x), int(box_y)), (int(box_width), int(box_height)), color, thickness=2)
+                    # put the class name text on the detected object
+                    cv2.putText(image, class_name, (int(box_x), int(box_y - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+                    # put the FPS text on top of the frame
+                    cv2.putText(image, f"{fps:.2f} FPS", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv2.imshow("Actual frame", img)
         cv2.waitKey(1) & 0xFF
         return number_of_people
