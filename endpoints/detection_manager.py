@@ -2,8 +2,6 @@ import sys
 sys.path.append("/usr/lib/python3.7/")
 import platform
 import cv2
-from threading import Thread
-from video_stream import VideoStream
 from datetime import datetime
 import datetime
 import time
@@ -13,7 +11,6 @@ from detector_cv2 import Detector
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from database_manager import DatabaseManager
-import pymongo
 import ast
 import tensorflow as tf
 import nms
@@ -65,7 +62,7 @@ class DetectionManager:
             number_of_people = self.detector.detect_cv2(img)    
             current_time = time.time()
             elapsed_time = current_time - start_time
-            self.database_manager.insertDetection(current_time, number_of_people, self.detection_period_id)
+            self.database_manager.insert_detection(current_time, number_of_people, self.detection_period_id)
             if elapsed_time > self.detectionSeconds:
                 break
 

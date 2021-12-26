@@ -6,20 +6,11 @@ import datetime
 
 def schedule_detection(start_date, start_time, end_time, neuralNetworkType="SSD_Mobilenet_v2_320x320", obj_threshold=0.3,
                        video_resolution={"width":320, "height":320}, framerate=30):
-    #print("Start date: " + start_date)
-    #print("Start time: " + start_time)
     database_manager = DatabaseManager()
-    
+
     detectionSeconds = getDetectionSeconds(start_time, end_time)
-    
-    print("detectionSeconds: \n")
-    print(detectionSeconds)
-    '''
-    detection_period_id = database_manager.insertDetectionPeriod(dateDictToDateString(start_date), timeDictToTimeString(start_time),
-                                                                 timeDictToTimeString(end_time), neuralNetworkType, detectionSeconds,  obj_threshold,
-                       video_resolution, framerate)
-    '''
-    detection_period_id = database_manager.insertDetectionPeriod(time_date_to_timestamp(start_date, start_time), time_date_to_timestamp(start_date, end_time),
+
+    detection_period_id = database_manager.insert_detection_period(time_date_to_timestamp(start_date, start_time), time_date_to_timestamp(start_date, end_time),
                                                                  neuralNetworkType, detectionSeconds, obj_threshold, video_resolution, framerate)
     command_string_list = []
     command_string_list.append("echo ")
