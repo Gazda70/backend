@@ -1,1 +1,0 @@
-echo "I am here as expected" >> /home/pi/Desktop/My_Server/PortableHumanRecognitionSystemWebApplication/backend/cron/croncontent

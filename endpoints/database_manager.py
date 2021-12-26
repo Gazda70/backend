@@ -5,28 +5,19 @@ import math
 class DatabaseManager:
     def __init__(self):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-
         self.db = self.client["PeopleCounterDatabase"]
-
         self.detection_period_collection = self.db["DetectionPeriod"]
-        
         self.detection_collection = self.db["Detection"]
         
-    def insertDetectionPeriod(self, start_time, end_time, neural_network_type, detection_seconds,  obj_threshold,
-                       video_resolution, framerate):
         
+    def insertDetectionPeriod(self, start_time, end_time, neural_network_type, detection_seconds,  obj_threshold,
+                       video_resolution, framerate):  
         return_value = self.detection_period_collection.insert_one({"start_time":start_time, "end_time":end_time, "detection_seconds":detection_seconds,
                                                           "neural_network_type":neural_network_type, "obj_threshold":obj_threshold, "video_resolution":video_resolution, "framerate":framerate})
-        '''
-        return_value = self.detection_period_collection.insert_one({"start_date":start_date, "start_time":start_time, "end_time":end_time, "detection_seconds":detection_seconds,
-                                                                  "neural_network_type":neural_network_type, "obj_threshold":obj_threshold,
-                       "video_resolution":video_resolution, "framerate":framerate})
-        '''
         return return_value.inserted_id
     
         
     def insertDetection(self, time, detections, detection_period_id):
-        print("When inserting, detection_period_id: " + str(detection_period_id))
         self.detection_collection.insert_one({"time":time, "detections":detections, "detection_period_id":str(detection_period_id)})
         
         
@@ -41,21 +32,22 @@ class DatabaseManager:
     
     
     def findDetectionPeriodsForGivenDateRange(self, start_date_range, end_date_range):
-        
         criteria = {"start_time":{"$gte":start_date_range, "$lte": end_date_range}}
         return self.detection_period_collection.find(criteria)
     
+    
     def findAllDetectionsForGivenDetectionPeriod(self, detection_period_id):
-        
         criteria = {"detection_period_id":detection_period_id}
         return self.detection_collection.find(criteria)
-                
+          
+          
     def minDetectedPeople(self, detections):
        minimal = self.maxDetectedPeople(detections)
        for det in detections:
            if det["detections"] < minimal:
                minimal = det["detections"]
        return minimal
+    
     
     def maxDetectedPeople(self, detections):
        maximal = 0

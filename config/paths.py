@@ -1,1 +1,0 @@
-SSD_MOBILENET_V2_SAVED_MODEL_PATH="/home/pi/Desktop/My_Server/backend/models/saved_model.pb"
