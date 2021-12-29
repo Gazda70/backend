@@ -1,5 +1,3 @@
-# import the necessary packages
-import numpy as np
 # Malisiewicz et al.
 def non_max_suppression_fast(boxes, overlapThresh):
 	# if there are no boxes, return an empty list
@@ -7,8 +5,8 @@ def non_max_suppression_fast(boxes, overlapThresh):
 		return []
 	# if the bounding boxes integers, convert them to floats --
 	# this is important since we'll be doing a bunch of divisions
-	if boxes.dtype.kind == "i":
-		boxes = boxes.astype("float")
+	#if boxes.dtype.kind == "i":
+	#	boxes = boxes.astype("float")
 	# initialize the list of picked indexes	
 	pick = []
 	# grab the coordinates of the bounding boxes
@@ -45,5 +43,5 @@ def non_max_suppression_fast(boxes, overlapThresh):
 			np.where(overlap > overlapThresh)[0])))
 	# return only the bounding boxes that were picked using the
 	# integer data type
-	print("How many boxes went through NMS: " + str(len(boxes[pick].astype("int"))))
-	return boxes[pick].astype("int")
+	print(boxes[pick])
+	return boxes[pick]

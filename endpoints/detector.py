@@ -8,18 +8,21 @@ from neural_networks_data import NEURAL_NETWORKS
 from nms import non_max_suppression_fast
 
 class Detector:
-    def __init__(self, model_name):
+    def __init__(self, model_name, object_threshold, box_overlap_threshold):
         self.model = cv2.dnn.readNet(NEURAL_NETWORKS[model_name]["model"],
                         config=NEURAL_NETWORKS[model_name]["config"],
                         framework=NEURAL_NETWORKS[model_name]["framework"])
         self.class_names = NEURAL_NETWORKS[model_name]["class_names"]
         self.img_width = NEURAL_NETWORKS[model_name]["img_width"]
         self.img_height = NEURAL_NETWORKS[model_name]["img_height"]
-
+        self.object_threshold = object_threshold
+        self.box_overlap_threshold = box_overlap_threshold
 
     def detect(self, image):
+        #tu pozyskuje sie rzeczywiste wymiary obrazu np 1260x720
         image_height, image_width, _ = image.shape
         # create blob from image
+        #blob tworzy sie poprzez uzycie wymiarow obrazu wymaganych przez siec neuronowa
         blob = cv2.dnn.blobFromImage(image=image, size=(self.img_width, self.img_height), mean=(104, 117, 123), swapRB=True)
         # start time to calculate FPS
         start = time.time()
@@ -36,10 +39,11 @@ class Detector:
             confidence = detection[2]
             # draw bounding boxes only if the detection confidence is above...
             # ... a certain threshold, else skip
-            if confidence > .4:
+            if confidence > self.object_threshold:
                 # get the class id
                 class_id = detection[1]
                 if class_id == 1:
+                    #skalowanie wykonuje sie przy uzyciu orginalnych wymiarow obrazu
                     # get the bounding box coordinates
                     box_x_1 = detection[3] * image_width
                     box_y_1 = detection[4] * image_height
@@ -56,7 +60,7 @@ class Detector:
                     boxes_with_people.append([box_x_1, box_y_1, box_x_2, box_y_2])
         
         #uzycie algorytmu Non Maximal Suppresion
-        filtered_boxes_with_people = non_max_suppression_fast(np.array(boxes_with_people))
+        filtered_boxes_with_people = non_max_suppression_fast(np.array(boxes_with_people), self.box_overlap_threshold)
         number_of_people = len(filtered_boxes_with_people)          
         cv2.imshow("Actual frame", img)
         cv2.waitKey(1) & 0xFF

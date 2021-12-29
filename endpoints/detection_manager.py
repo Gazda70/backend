@@ -17,43 +17,31 @@ from neural_networks_data import NEURAL_NETWORKS
 
 
 class DetectionManager:
-    #def __init__(self):
-        #self.model_paths = {"SSD_Mobilenet_v2_320x320":"/home/pi/Desktop/My_Server/backend/models/"}
-        #self.category_maps = {"SSD_Mobilenet_v2_320x320":{1: "person"}}
 
-    def setupDetection(self, detection_period_id, neural_network_type="SSD_Mobilenet_v2_320x320", detection_seconds=60,  obj_threshold=0.3, framerate=30):
-        #TU SPRAWDZIC
+    def setupDetection(self, detection_period_id, neural_network_type="SSD_Mobilenet_v2_320x320", detection_seconds=60,
+                       object_threshold=0.3, box_overlap_threshold=0.8, framerate=30, video_resolution={"width":1260, "height":720}):
         self.neural_network_type = neural_network_type
         self.obj_threshold = obj_threshold
         self.detection_seconds = detection_seconds
         self.framerate = framerate
-        self.detector = Detector("SSD_Mobilenet_v2_320x320")
+        self.detector = Detector(neural_network_type, object_threshold, box_overlap_threshold)
         self.database_manager = DatabaseManager()
-        #print("In setupDetection: " + str(detection_period_id))
         self.detection_period_id = detection_period_id
-        #print("Starting detection: " + str(datetime.datetime.now()))
+        self.video_resolution = video_resolution
         detections = self.detect()
-        #print("Ending detection: " + str(datetime.datetime.now()))
 
     def detect(self):
         framerate=30
         camera = PiCamera()
         camera.rotation = 180
-        camera.resolution = (NEURAL_NETWORKS[neural_network_type]["img_width"], NEURAL_NETWORKS[neural_network_type]["img_height"])
+        camera.resolution = (self.video_resolution["width"], self.video_resolution["height"])
         camera.framerate = framerate
-        rawCapture = PiRGBArray(camera, size = (NEURAL_NETWORKS[neural_network_type]["img_width"], NEURAL_NETWORKS[neural_network_type]["img_height"]))
-        
-        file = open("test_file", "w")
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        file.write("Active on: " + str(current_time))
-        file.close()
-        start_time = time.time()
+        rawCapture = PiRGBArray(camera, size = (self.video_resolution["width"], self.video_resolution["height"]))
 
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
             img = frame.array    
             rawCapture.truncate(0)
-            number_of_people = self.detector.detect_cv2(img)    
+            number_of_people = self.detector.detect(img)    
             current_time = time.time()
             elapsed_time = current_time - start_time
             self.database_manager.insert_detection(current_time, number_of_people, self.detection_period_id)

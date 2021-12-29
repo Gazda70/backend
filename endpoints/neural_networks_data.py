@@ -81,4 +81,4 @@ NEURAL_NETWORKS = {"SSD_Mobilenet_v2_320x320":{"model":"/home/pi/Desktop/My_Serv
     'teddy bear',
     'hair drier',
     'toothbrush'
-], "framework":"TensorFlow"}}
+], "framework":"OpenCV"}}
