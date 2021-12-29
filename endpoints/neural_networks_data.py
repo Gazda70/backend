@@ -1,6 +1,6 @@
 NEURAL_NETWORKS = {"SSD_Mobilenet_v2_320x320":{"model":"/home/pi/Desktop/My_Server/backend/models/frozen_inference_graph.pb",
                     "config":"/home/pi/Desktop/My_Server/backend/models/ssd_mobilenet_v2_coco_2018_03_29.pbtxt.txt",
-                                               "img_width":300, "img_height":300, "class_names":[
+                                               "img_width":320, "img_height":320, "class_names":[
     'person',
     'bicycle',
     'car',

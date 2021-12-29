@@ -7,27 +7,25 @@ import datetime
 import time
 import numpy as np
 import os
-from detector_cv2 import Detector
+from detector import Detector
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from database_manager import DatabaseManager
 import ast
 import tensorflow as tf
-import nms
+from neural_networks_data import NEURAL_NETWORKS
 
 
 class DetectionManager:
-    def __init__(self):
-        self.model_paths = {"SSD_Mobilenet_v2_320x320":"/home/pi/Desktop/My_Server/backend/models/"}
-        self.category_maps = {"SSD_Mobilenet_v2_320x320":{1: "person"}}
+    #def __init__(self):
+        #self.model_paths = {"SSD_Mobilenet_v2_320x320":"/home/pi/Desktop/My_Server/backend/models/"}
+        #self.category_maps = {"SSD_Mobilenet_v2_320x320":{1: "person"}}
 
-    def setupDetection(self, detection_period_id, neuralNetworkType="SSD_Mobilenet_v2_320x320", detectionSeconds=60,  obj_threshold=0.3,
-                       video_resolution={"width":320, "height":320}, framerate=30):
+    def setupDetection(self, detection_period_id, neural_network_type="SSD_Mobilenet_v2_320x320", detection_seconds=60,  obj_threshold=0.3, framerate=30):
         #TU SPRAWDZIC
-        self.neuralNetworkType = neuralNetworkType
+        self.neural_network_type = neural_network_type
         self.obj_threshold = obj_threshold
-        self.detectionSeconds = detectionSeconds
-        self.video_resolution = video_resolution
+        self.detection_seconds = detection_seconds
         self.framerate = framerate
         self.detector = Detector("SSD_Mobilenet_v2_320x320")
         self.database_manager = DatabaseManager()
@@ -38,14 +36,12 @@ class DetectionManager:
         #print("Ending detection: " + str(datetime.datetime.now()))
 
     def detect(self):
-        resolution={"width":1200, "height":720}
         framerate=30
         camera = PiCamera()
         camera.rotation = 180
-        camera.resolution = (resolution["width"], resolution["height"])
+        camera.resolution = (NEURAL_NETWORKS[neural_network_type]["img_width"], NEURAL_NETWORKS[neural_network_type]["img_height"])
         camera.framerate = framerate
-        rawCapture = PiRGBArray(camera, size = (resolution["width"], resolution["height"]))
-        detections = self.detect()
+        rawCapture = PiRGBArray(camera, size = (NEURAL_NETWORKS[neural_network_type]["img_width"], NEURAL_NETWORKS[neural_network_type]["img_height"]))
         
         file = open("test_file", "w")
         now = datetime.now()
@@ -53,9 +49,7 @@ class DetectionManager:
         file.write("Active on: " + str(current_time))
         file.close()
         start_time = time.time()
-        
-        detection_results = None
-        
+
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
             img = frame.array    
             rawCapture.truncate(0)
