@@ -10,15 +10,13 @@ class DatabaseManager:
         self.detection_collection = self.db["Detection"]
         
         
-    def insert_detection_period(self, start_time, end_time, neural_network_type, detection_seconds,  obj_threshold,
-                       video_resolution, framerate):  
-        return_value = self.detection_period_collection.insert_one({"start_time":start_time, "end_time":end_time, "detection_seconds":detection_seconds,
-                                                          "neural_network_type":neural_network_type, "obj_threshold":obj_threshold, "video_resolution":video_resolution, "framerate":framerate})
+    def insert_detection_period(self, start_time, end_time):  
+        return_value = self.detection_period_collection.insert_one({"start_time":start_time, "end_time":end_time})
         return return_value.inserted_id
     
         
-    def insert_detection(self, time, detections, detection_period_id):
-        self.detection_collection.insert_one({"time":time, "detections":detections, "detection_period_id":str(detection_period_id)})
+    def insert_detection(self, detections, detection_period_id):
+        self.detection_collection.insert_one({"detections":detections, "detection_period_id":str(detection_period_id)})
         
         
     def find_detection_periods_for_given_date(self, date):
