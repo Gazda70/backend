@@ -126,8 +126,8 @@ class Detector:
                     
                     boxes_with_people.append([box_x_1, box_y_1, box_x_2, box_y_2])
         
-        #filtered_boxes_with_people = non_max_suppression_fast(np.array(boxes_with_people), self.box_overlap_threshold)
-        filtered_boxes_with_people = boxes_with_people
+        filtered_boxes_with_people = non_max_suppression_fast(np.array(boxes_with_people), self.box_overlap_threshold)
+        #filtered_boxes_with_people = boxes_with_people
         number_of_people = len(filtered_boxes_with_people)
         file = open("test_file", "a")
         file.write("Number of people: " + str(number_of_people))
