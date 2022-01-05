@@ -30,15 +30,15 @@ class GetStatisticsRequestManager:
                 people_max = 0
                 people_avg = 0
             
-            start_time = det_per["start_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
-            end_time = det_per["end_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
+            start_time = det_per["start_time"].strftime("%m%d%Y %H:%M").split(' ')[1]
+            end_time = det_per["end_time"].strftime("%m%d%Y %H:%M").split(' ')[1]
             detection_period_stats.append({"start_time":start_time, "end_time":end_time, "people_min":people_min,
                                            'people_max':people_max, 'people_avg':people_avg})
             
         if len(total_averaged_detections) != 0: 
             people_min = min(total_averaged_detections)
             people_max = max(total_averaged_detections)
-            people_avg = int(total_average(averaged_detections))
+            people_avg = int(average(total_averaged_detections))
         else:
             people_min = 0
             people_max = 0
