@@ -24,15 +24,18 @@ class StatisticsCalculator:
         return 0
         
         
-    def divide_into_same_people_count_collections(self, detections, minimal_same_count_frame_number):
+    def divide_into_subcollections(self, detections, border_frame_number):
         averaged_detections = []
-        same_count_frame_number = 1
+        count_frame_number = 1
         previous_count = 0
+        summed_people_number = 0
         for detection in detections:
-            if detection["detections"] != previous_count:
-                if same_count_frame_number >= minimal_same_count_frame_number:
-                    averaged_detections.append({"detections":previous_count,"same_count_frame_number":same_count_frame_number})
-                same_count_frame_number = 1
-            previous_count = detection["detections"]
-            same_count_frame_number += 1
+                summed_people_number = summed_people_number + detection["detections"]
+                if count_frame_number >= border_frame_number:
+                    averaged_detections.append(int(summed_people_number/count_frame_number))
+                    count_frame_number = 1
+                else
+                    count_frame_number += 1
+        if count_frame_number != 0:
+            averaged_detections.append(int(summed_people_number/count_frame_number))
         return averaged_detections

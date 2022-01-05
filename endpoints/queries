@@ -1,0 +1,6 @@
+db.DetectionPeriod.insert_one({"start_time":ISODate(2021-01-01T14:15:15+00.00), "end_time":ISODate(2021-01-01T14:25:15+00.00), "detection_seconds":detection_seconds,
+                                                          "neural_network_type":neural_network_type, "obj_threshold":obj_threshold, "video_resolution":video_resolution, "framerate":framerate})
+                                                          
+{ "_id" : ObjectId("61d055aeef96a2802a9cd7a9"), "start_time" : ISODate("2021-01-01T14:15:15Z"), "end_time" : ISODate("2021-01-01T14:25:15Z") }
+{ "_id" : ObjectId("61d0562aef96a2802a9cd7aa"), "start_time" : ISODate("2021-01-01T14:35:15Z"), "end_time" : ISODate("2021-01-01T14:45:15Z") }
+{ "_id" : ObjectId("61d05638ef96a2802a9cd7ab"), "start_time" : ISODate("2021-01-01T14:55:15Z"), "end_time" : ISODate("2021-01-01T15:45:15Z") }                                                         

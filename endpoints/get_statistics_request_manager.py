@@ -4,7 +4,7 @@ import math
 import ast
 from detection_scheduler import schedule_detection
 from database_manager import DatabaseManager
-from statistics_calculator import StatisticsCalculator
+from numpy.lib.function_base import average
 import datetime
 
 class GetStatisticsRequestManager:
@@ -15,27 +15,39 @@ class GetStatisticsRequestManager:
         detection_period_list = self.get_detection_periods(req)
         detection_period_stats = []
         total_averaged_detections = []
-        statistics_calculator = StatisticsCalculator()
         for det_per in detection_period_list:
             detections = self.database_manager.find_all_detections_for_given_detection_period(str(det_per.get('_id')))
             detections_list = list(detections)
             
-            averaged_detections = statistics_calculator.divide_into_same_people_count_collections(detections_list, 2)
+            averaged_detections = self.divide_into_subcollections(detections_list, 2)
             total_averaged_detections = total_averaged_detections + averaged_detections
-            people_min = statistics_calculator.min_detected_people(averaged_detections)
-            people_max = statistics_calculator.max_detected_people(averaged_detections)
-            people_avg = statistics_calculator.arithmetic_average_detected_people(averaged_detections)
+            if len(averaged_detections) != 0: 
+                people_min = min(averaged_detections)
+                people_max = max(averaged_detections)
+                people_avg = int(average(averaged_detections))
+            else:
+                people_min = 0
+                people_max = 0
+                people_avg = 0
             
             start_time = det_per["start_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
             end_time = det_per["end_time"].strftime("%m%d%Y %H:%M:%S").split(' ')[1]
             detection_period_stats.append({"start_time":start_time, "end_time":end_time, "people_min":people_min,
                                            'people_max':people_max, 'people_avg':people_avg})
             
-            
-        whole_day_stats = {"people_min":statistics_calculator.min_detected_people(total_averaged_detections),
-                           'people_max':statistics_calculator.max_detected_people(total_averaged_detections),
-                           'people_avg':statistics_calculator.arithmetic_average_detected_people(total_averaged_detections)}
+        if len(total_averaged_detections) != 0: 
+            people_min = min(total_averaged_detections)
+            people_max = max(total_averaged_detections)
+            people_avg = int(total_average(averaged_detections))
+        else:
+            people_min = 0
+            people_max = 0
+            people_avg = 0   
+        whole_day_stats = {"people_min":people_min,
+                           'people_max':people_max,
+                           'people_avg':people_avg}
         response_body = {"detection_period_stats":detection_period_stats, "whole_day_stats":whole_day_stats}
+        print(response_body)
         return response_body
     
     
@@ -57,3 +69,19 @@ class GetStatisticsRequestManager:
         timezone_string = "+00:00"
         timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"],'%Y-%b-%d')
         return timestamp
+    
+    def divide_into_subcollections(self, detections, border_frame_number):
+        averaged_detections = []
+        count_frame_number = 1
+        previous_count = 0
+        summed_people_number = 0
+        for detection in detections:
+            summed_people_number = summed_people_number + detection["detections"]
+            if count_frame_number >= border_frame_number:
+                averaged_detections.append(int(summed_people_number/count_frame_number))
+                count_frame_number = 1
+            else:
+                count_frame_number = count_frame_number + 1
+        if count_frame_number != 0:
+            averaged_detections.append(int(summed_people_number/count_frame_number))
+        return averaged_detections
