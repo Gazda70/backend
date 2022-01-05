@@ -13,8 +13,8 @@ def schedule_detection(start_date, start_time, end_time, neural_network_type="SS
     detection_period_id = database_manager.insert_detection_period(time_date_to_timestamp(start_date, start_time), time_date_to_timestamp(start_date, end_time), neural_network_type, obj_threshold, video_resolution, framerate)
     command_string_list = []
     command_string_list.append("echo ")
-    command_string_list.append("python3.7 ")
-    command_string_list.append("scheduled_detection.py")
+    command_string_list.append("\"python3.7 ")
+    command_string_list.append("/home/pi/Desktop/My_Server/backend/endpoints/scheduled_detection.py")
     command_string_list.append(" --detection_period_id=")
     command_string_list.append(str(detection_period_id))
     command_string_list.append(" --neural_network_type=")
@@ -30,12 +30,12 @@ def schedule_detection(start_date, start_time, end_time, neural_network_type="SS
     command_string_list.append(" --video_resolution_height=")
     command_string_list.append(str(video_resolution["height"]))
     command_string_list.append(" --framerate=")
-    command_string_list.append(str(framerate))
+    command_string_list.append(str(framerate)+"\"")
     command_string_list.append(" | at ")
     command_string_list.append(time_dict_to_time_string(start_time))
     command_string_list.append(" ")
     command_string_list.append(date_dict_to_date_string(start_date))
-    
+
     command = ''.join(command_string_list)
               
     print(command)

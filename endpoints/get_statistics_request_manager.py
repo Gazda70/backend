@@ -18,13 +18,18 @@ class GetStatisticsRequestManager:
         for det_per in detection_period_list:
             detections = self.database_manager.find_all_detections_for_given_detection_period(str(det_per.get('_id')))
             detections_list = list(detections)
-            
+            print("Detection period")
+            print(det_per)
+            print("Detections")
+            print(detections_list)
             averaged_detections = self.divide_into_subcollections(detections_list, 2)
             total_averaged_detections = total_averaged_detections + averaged_detections
-            if len(averaged_detections) != 0: 
+            if len(averaged_detections) != 0:
+                print("len(averaged_detections): " + str(len(averaged_detections)))
+                print("average(averaged_detections): " + str(average(averaged_detections)))
                 people_min = min(averaged_detections)
                 people_max = max(averaged_detections)
-                people_avg = int(average(averaged_detections))
+                people_avg = math.ceil(average(averaged_detections))
             else:
                 people_min = 0
                 people_max = 0
@@ -38,7 +43,7 @@ class GetStatisticsRequestManager:
         if len(total_averaged_detections) != 0: 
             people_min = min(total_averaged_detections)
             people_max = max(total_averaged_detections)
-            people_avg = int(average(total_averaged_detections))
+            people_avg = math.ceil(average(total_averaged_detections))
         else:
             people_min = 0
             people_max = 0
@@ -73,13 +78,13 @@ class GetStatisticsRequestManager:
     def divide_into_subcollections(self, detections, border_frame_number):
         averaged_detections = []
         count_frame_number = 1
-        previous_count = 0
         summed_people_number = 0
         for detection in detections:
             summed_people_number = summed_people_number + detection["detections"]
             if count_frame_number >= border_frame_number:
                 averaged_detections.append(int(summed_people_number/count_frame_number))
                 count_frame_number = 1
+                summed_people_number = 0
             else:
                 count_frame_number = count_frame_number + 1
         if count_frame_number != 0:
