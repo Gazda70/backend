@@ -17,15 +17,9 @@ class GetStatisticsRequestManager:
         for det_per in detection_period_list:
             detections = self.database_manager.find_all_detections_for_given_detection_period(str(det_per.get('_id')))
             detections_list = list(detections)
-            print("Detection period")
-            print(det_per)
-            print("Detections")
-            print(detections_list)
             averaged_detections = self.divide_into_subcollections(detections_list, 2)
             total_averaged_detections = total_averaged_detections + averaged_detections
             if len(averaged_detections) != 0:
-                print("len(averaged_detections): " + str(len(averaged_detections)))
-                print("average(averaged_detections): " + str(average(averaged_detections)))
                 people_min = min(averaged_detections)
                 people_max = max(averaged_detections)
                 people_avg = math.ceil(average(averaged_detections))
@@ -36,8 +30,7 @@ class GetStatisticsRequestManager:
             
             start_time = det_per["start_time"].strftime("%m%d%Y %H:%M").split(' ')[1]
             end_time = det_per["end_time"].strftime("%m%d%Y %H:%M").split(' ')[1]
-            detection_period_stats.append({"start_time":start_time, "end_time":end_time, "people_min":people_min,
-                                           'people_max':people_max, 'people_avg':people_avg})
+            detection_period_stats.append({"start_time":start_time, "end_time":end_time, "people_min":people_min, 'people_max':people_max, 'people_avg':people_avg})
             
         if len(total_averaged_detections) != 0: 
             people_min = min(total_averaged_detections)
@@ -60,19 +53,9 @@ class GetStatisticsRequestManager:
         end_date = start_date + datetime.timedelta(days=1)
         results = self.database_manager.find_detection_periods_for_given_date(self.date_to_timestamp(ast.literal_eval(req["startDate"])))
         return list(results)
-        
-
-    def time_date_to_timestamp(self, time_dict, date_dict):
-        timezone_string = "+00:00"
-        timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"]
-                                      + 'T' + time_dict["hour"] + ':' + time_dict["minute"] + timezone_string, '%Y-%b-%dT%H:%M%z')
-        return timestamp
-
 
     def date_to_timestamp(self, date_dict):
-        timezone_string = "+00:00"
-        timestamp = datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"],'%Y-%b-%d')
-        return timestamp
+        return datetime.datetime.strptime(date_dict["year"] + '-' + date_dict["month"] + '-' + date_dict["day"],'%Y-%b-%d')
     
     def divide_into_subcollections(self, detections, border_frame_number):
         averaged_detections = []
