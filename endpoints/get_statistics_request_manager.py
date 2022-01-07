@@ -2,7 +2,6 @@ import json
 import time
 import math
 import ast
-from detection_scheduler import schedule_detection
 from database_manager import DatabaseManager
 from numpy.lib.function_base import average
 import datetime
