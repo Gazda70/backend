@@ -29,4 +29,3 @@ class DatabaseManager:
     def find_all_detections_for_given_detection_period(self, detection_period_id):
         criteria = {"detection_period_id":detection_period_id}
         return self.detection_collection.find(criteria)
-        

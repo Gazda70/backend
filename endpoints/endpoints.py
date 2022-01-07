@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 import json
 from get_statistics_request_manager import GetStatisticsRequestManager
-from setup_detection_request_manager import SetupDetectionRequestManager
+#from setup_detection_request_manager import SetupDetectionRequestManager
 
 app = Flask(__name__)
 CORS(app)
@@ -31,3 +31,4 @@ def setup_detection():
     response = make_response(response_body_json, 200)
     response.mimetype = "application/json"
     return response
+    

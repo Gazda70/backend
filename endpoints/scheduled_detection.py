@@ -3,7 +3,7 @@ from database_manager import DatabaseManager
 import sys, getopt
 from datetime import datetime
 import time
-
+print("HERE")
 try:
     opts, args = getopt.getopt(sys.argv[1:], "", ["neural_network_type=", "detection_seconds=", "obj_threshold=", "box_overlap_threshold=",
                        "video_resolution_width=", "video_resolution_height=", "framerate=", "detection_period_id="])
@@ -16,15 +16,8 @@ except getopt.GetoptError:
     start_time = time.time()
     sys.exit(2)
 
-file = open("test_file", "w")
-now = datetime.now()
-current_time = now.strftime("%H:%M:%S")
-file.write("Detection starting on: " + str(current_time))
-file.close()
-
 
 options = dict(opts)
-start_time = time.time()
 
 detection_manager = DetectionManager()
 detection_manager.setupDetection(detection_period_id=str(options["--detection_period_id"]), neural_network_type=options["--neural_network_type"], detection_seconds=int(options["--detection_seconds"]),  obj_threshold=float(options["--obj_threshold"]),

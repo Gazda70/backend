@@ -6,6 +6,7 @@ from tensorflow import keras
 import time
 from neural_networks_data import NEURAL_NETWORKS
 from nms import non_max_suppression_fast
+from datetime import datetime
 
 class Detector:
     def __init__(self, model_name, object_threshold, box_overlap_threshold):
@@ -22,7 +23,7 @@ class Detector:
         blob = cv2.dnn.blobFromImage(image=image, size=(self.img_width, self.img_height), mean=(104, 117, 123), swapRB=True)
         start = time.time()
         self.model.setInput(blob)
-        output = self.model.forward()       
+        output = self.model.forward()
         end = time.time()
         fps = 1 / (end-start)
         boxes_with_people = []
@@ -42,8 +43,11 @@ class Detector:
                     
                     boxes_with_people.append([box_x_1, box_y_1, box_x_2, box_y_2])
         
+        file = open("test_file", "a")
+        file.write("Detection starting")
+        file.close()
         filtered_boxes_with_people = non_max_suppression_fast(np.array(boxes_with_people), self.box_overlap_threshold)
-        number_of_people = len(filtered_boxes_with_people)          
+        number_of_people = len(filtered_boxes_with_people)
         cv2.imshow("Actual frame", image)
         cv2.waitKey(1) & 0xFF
         return number_of_people
